@@ -77,17 +77,17 @@ while True:
     # Build natural language description
     description = build_description(gender, age, emotion, head_pose)
 
-    # Create a black canvas for description text
-    desc_canvas = np.zeros((100, 640, 3), dtype=np.uint8)
+    # Create a white canvas (200x900) for description
+    desc_canvas = np.ones((200, 900, 3), dtype=np.uint8) * 255  # white background
 
-    # Put the description text on it
-    cv2.putText(desc_canvas, description, (10, 60),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+    # Put the description text on it (black text)
+    cv2.putText(desc_canvas, description, (10, 120),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
 
     # Show it in a separate window
     cv2.imshow("Description", desc_canvas)
 
-    # Show the main window
+    # Show the main webcam feed
     cv2.imshow("Facial Description Analyzer", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
