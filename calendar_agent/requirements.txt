@@ -1,0 +1,18 @@
+# Backend dependencies
+fastapi
+uvicorn
+langchain
+openai  # Optional: if using OpenAI LLM
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
+python-dotenv
+pytz
+
+# Frontend (Streamlit UI)
+streamlit
+requests
+
+# Optional for async and better performance
+httpx
