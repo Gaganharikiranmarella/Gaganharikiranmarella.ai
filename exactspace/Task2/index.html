@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Greeting</title>
+  <style>
+    #greeting { text-align: center; margin-top: 20px; font-size: 24px; }
+  </style>
+</head>
+<body>
+  <form id="nameForm">
+    <input type="text" id="nameInput" placeholder="Enter your name" required />
+    <button type="submit">Submit</button>
+  </form>
+  <div id="greeting"></div>
+
+  <script>
+    const form = document.getElementById('nameForm');
+    const greetingDiv = document.getElementById('greeting');
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const name = document.getElementById('nameInput').value;
+      greetingDiv.textContent = `Hello ${name}`;
+    });
+  </script>
+</body>
+</html>
