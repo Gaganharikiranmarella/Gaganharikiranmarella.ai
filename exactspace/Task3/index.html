@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task 3 - API Handling</title>
+</head>
+<body>
+  <input type="text" id="nameInput" placeholder="Enter your name" />
+  <button onclick="sendName()">Submit</button>
+  <div id="message"></div>
+
+  <script>
+    async function sendName() {
+      const name = document.getElementById('nameInput').value;
+      const response = await fetch('http://localhost:3000/greet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const data = await response.json();
+      document.getElementById('message').innerText = data.message;
+    }
+  </script>
+</body>
+</html>
