@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JSON Validator</title>
+  <style>
+    #result.valid {
+      color: green;
+      font-weight: bold;
+    }
+    #result.invalid {
+      color: red;
+      font-weight: bold;
+    }
+    textarea {
+      width: 400px;
+      height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h2>JSON Validator</h2>
+  <textarea id="jsonInput" placeholder='{"key": "value"}'></textarea><br><br>
+  <button onclick="validateJSON()">Submit</button>
+
+  <div id="result"></div>
+
+  <script>
+    function validateJSON() {
+      const input = document.getElementById('jsonInput').value;
+      const result = document.getElementById('result');
+      try {
+        JSON.parse(input);
+        result.textContent = "✅ Valid JSON";
+        result.className = "valid";
+      } catch {
+        result.textContent = "❌ Invalid JSON";
+        result.className = "invalid";
+      }
+    }
+  </script>
+</body>
+</html>
