@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Greet & JSON Validator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    .section {
+      border: 2px solid #ccc;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .valid {
+      color: green;
+      font-weight: bold;
+    }
+    .invalid {
+      color: red;
+      font-weight: bold;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h2>👋 Greet by Name</h2>
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <button onclick="submitName()">Submit</button>
+    <button onclick="resetName()">Reset</button>
+    <div id="greetingMessage"></div>
+  </div>
+
+  <!-- JSON Validator Section -->
+  <div class="section">
+    <h2>🧪 JSON Validator</h2>
+    <textarea id="jsonInput" placeholder='{"key": "value"}'></textarea><br><br>
+    <button onclick="validateJSON()">Submit</button>
+    <button onclick="resetJSON()">Reset</button>
+    <div id="jsonResult"></div>
+  </div>
+
+  <script>
+    // Greet Name
+    async function submitName() {
+      const name = document.getElementById('nameInput').value;
+      const res = await fetch('http://localhost:3000/greet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      document.getElementById('greetingMessage').innerText = data.message;
+    }
+
+    function resetName() {
+      document.getElementById('nameInput').value = '';
+      document.getElementById('greetingMessage').innerText = '';
+    }
+
+    // JSON Validator
+    function validateJSON() {
+      const input = document.getElementById('jsonInput').value;
+      const result = document.getElementById('jsonResult');
+      try {
+        JSON.parse(input);
+        result.textContent = '✅ Valid JSON';
+        result.className = 'valid';
+      } catch {
+        result.textContent = '❌ Invalid JSON';
+        result.className = 'invalid';
+      }
+    }
+
+    function resetJSON() {
+      document.getElementById('jsonInput').value = '';
+      const result = document.getElementById('jsonResult');
+      result.textContent = '';
+      result.className = '';
+    }
+  </script>
+
+</body>
+</html>
