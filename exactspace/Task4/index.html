@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Greeting Task with Reset</title>
+  <style>
+    #message {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Enter Your Name</h2>
+  <input type="text" id="nameInput" placeholder="Your name">
+  <button onclick="submitName()">Submit</button>
+  <button onclick="resetForm()">Reset</button>
+
+  <div id="message"></div>
+
+  <script>
+    async function submitName() {
+      const name = document.getElementById('nameInput').value;
+      const res = await fetch('http://localhost:3000/greet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json();
+      document.getElementById('message').innerText = data.message;
+    }
+
+    function resetForm() {
+      document.getElementById('nameInput').value = '';
+      document.getElementById('message').innerText = '';
+    }
+  </script>
+</body>
+</html>
