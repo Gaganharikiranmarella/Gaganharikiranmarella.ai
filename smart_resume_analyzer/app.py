@@ -5,9 +5,7 @@ from dotenv import load_dotenv
 import docx2txt
 import pdfplumber
 
-# ----------------------
 # Load API Key from .env
-# ----------------------
 load_dotenv()
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 
@@ -15,31 +13,77 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ----------------------
-# HTML Templates
-# ----------------------
+# HTML Templates with Bootstrap and minor branding tweaks
 HTML_INDEX = '''
 <!doctype html>
-<title>Smart Resume Analyzer (OpenRouter LLM)</title>
-<h2>Upload your Resume (PDF, DOCX, or TXT)</h2>
-<form method=post enctype=multipart/form-data>
-  <input type=file name=resume accept=".pdf,.docx,.txt"><br><br>
-  <input type=submit value=Analyze>
-</form>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Smart Resume Analyzer (OpenRouter LLM)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-7">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h2 class="mb-4 text-primary text-center">Smart Resume Analyzer</h2>
+                        <form method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input class="form-control" type="file" name="resume" accept=".pdf,.docx,.txt" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg">Analyze Resume</button>
+                            </div>
+                        </form>
+                        {% if error %}
+                        <div class="alert alert-danger mt-4">{{ error }}</div>
+                        {% endif %}
+                        <p class="mt-4 text-secondary small text-center">Robotics & Defense Research Resume AI<br>
+                        Powered by DeepSeek via OpenRouter</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 '''
 
 HTML_RESULT = '''
 <!doctype html>
-<title>Analysis Result</title>
-<h2>Analysis Result</h2>
-<pre>{{ analysis }}</pre>
-<br>
-<a href="/">Analyze another Resume</a>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Analysis Result</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">AI-Powered Resume Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        <pre style="white-space: pre-wrap; font-size: 1.1em;">{{ analysis }}</pre>
+                        <div class="d-grid mt-4">
+                            <a href="/" class="btn btn-outline-primary btn-lg">Analyze Another Resume</a>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-4 text-secondary small text-center">
+                    Robotics & Defense Resume Analyzer | Powered by DeepSeek (OpenRouter)
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
 '''
 
-# ----------------------
-# Helper: Extract text from DOCX, PDF, TXT
-# ----------------------
 def extract_text(file_path):
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".txt":
@@ -58,24 +102,21 @@ def extract_text(file_path):
     else:
         return ""
 
-# ----------------------
-# Flask Routes
-# ----------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    error = None
     if request.method == 'POST':
         file = request.files.get('resume')
         if not file or file.filename == '':
-            return render_template_string(HTML_INDEX + '<p style="color:red;">No file selected!</p>')
-
+            return render_template_string(HTML_INDEX, error="No file selected!")
         save_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(save_path)
 
         resume_text = extract_text(save_path)
         if not resume_text.strip():
-            return render_template_string(HTML_INDEX + '<p style="color:red;">Could not extract text from file.</p>')
+            return render_template_string(HTML_INDEX, error="Could not extract text from file.")
 
-        # Prompt for the LLM
+        # LLM Prompt
         prompt = (
             "You are an AI assistant specializing in resume analysis for robotics and defense roles.\n"
             "Analyze the following resume for:\n"
@@ -87,14 +128,13 @@ def index():
             "--- Resume Text End ---"
         )
 
-        # OpenRouter API Call
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
             "Authorization": f"Bearer {API_KEY}",
             "Content-Type": "application/json"
         }
         payload = {
-            "model": "deepseek/deepseek-r1",  # Change to other models if needed
+            "model": "deepseek/deepseek-r1",  # Using DeepSeek as requested
             "messages": [
                 {"role": "system", "content": "You are a helpful AI assistant."},
                 {"role": "user", "content": prompt}
@@ -108,8 +148,7 @@ def index():
             analysis = f"Error {response.status_code}: {response.text}"
 
         return render_template_string(HTML_RESULT, analysis=analysis)
-
-    return render_template_string(HTML_INDEX)
+    return render_template_string(HTML_INDEX, error=error)
 
 if __name__ == '__main__':
     app.run(debug=True)
