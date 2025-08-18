@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "deepseek/deepseek-r1:free"
+MODEL = "deepseek/deepseek-r1:free"  # Or your preferred OpenRouter free model
 
 def call_ai(messages, system_prompt=None):
     headers = {

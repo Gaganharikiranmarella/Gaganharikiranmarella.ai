@@ -17,7 +17,7 @@ class AVInput:
                 continue
             self.last_frame = frame
             cv2.imshow("XERO Live Video", frame)
-            if cv2.waitKey(1) & 0xFF == 27:  # ESC closes window
+            if cv2.waitKey(1) & 0xFF == 27:  # ESC quits
                 self.running = False
                 break
         self.cam.release()
@@ -28,19 +28,19 @@ class AVInput:
         with sr.Microphone() as source:
             while self.running:
                 print("XERO is listening for command...")
-                audio = recognizer.listen(source, phrase_time_limit=5)
                 try:
+                    audio = recognizer.listen(source, phrase_time_limit=8)
                     text = recognizer.recognize_google(audio)
                     print("Heard:", text)
-                    # Here, any trigger word can be used, e.g. "capture"
-                    if "capture" in text.lower() or "analyze" in text.lower() or "exit" in text.lower():
-                        self.voice_command = text.lower()
-                        self.command_detected.set()
-                        if "exit" in text.lower():
-                            self.running = False
-                            break
+                    self.voice_command = text.lower()
+                    self.command_detected.set()
+                    if "exit" in text.lower():
+                        self.running = False
+                        break
                 except Exception:
                     print("Didn't catch that. Listening again...")
+                    self.voice_command = ""
+                    self.command_detected.set()
 
     def save_frame(self, filename="captured_frame.jpg"):
         if self.last_frame is not None:
