@@ -1,0 +1,8 @@
+requests
+python-dotenv
+speechrecognition
+pyttsx3
+pyaudio
+opencv-python
+numpy
+pandas
