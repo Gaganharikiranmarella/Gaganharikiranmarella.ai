@@ -26,21 +26,32 @@ class AVInput:
     def listen_audio(self):
         recognizer = sr.Recognizer()
         with sr.Microphone() as source:
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+            failure_count = 0
             while self.running:
                 print("XERO is listening for command...")
                 try:
-                    audio = recognizer.listen(source, phrase_time_limit=8)
+                    audio = recognizer.listen(source, phrase_time_limit=10)
                     text = recognizer.recognize_google(audio)
                     print("Heard:", text)
                     self.voice_command = text.lower()
                     self.command_detected.set()
+                    failure_count = 0
                     if "exit" in text.lower():
                         self.running = False
                         break
-                except Exception:
-                    print("Didn't catch that. Listening again...")
+                except sr.UnknownValueError:
+                    failure_count += 1
                     self.voice_command = ""
                     self.command_detected.set()
+                    if failure_count >= 2:
+                        print("XERO: Didn't catch that. Please speak again.")
+                    continue
+                except sr.RequestError as e:
+                    print(f"Recognition error: {e}")
+                    self.voice_command = ""
+                    self.command_detected.set()
+                    continue
 
     def save_frame(self, filename="captured_frame.jpg"):
         if self.last_frame is not None:
