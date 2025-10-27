@@ -1,0 +1,17 @@
+.app{min-height:100vh;background:linear-gradient(135deg,#1b0f2b,#4a1d6a);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
+.container{display:grid;grid-template-columns:300px 1fr;gap:24px;max-width:1100px;width:100%}
+.hero{display:flex;align-items:center;justify-content:center}
+.hero img{width:240px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.5))}
+.stage{background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border-radius:16px;padding:24px;border:1px solid rgba(255,255,255,.12)}
+.progress{height:8px;background:rgba(255,255,255,.15);border-radius:999px;overflow:hidden;margin-bottom:12px}
+.bar{height:100%;background:#ffd166;transition:width .3s ease}
+.question{font-size:1.8rem;margin:12px 0 20px}
+.answers{display:flex;gap:12px;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;padding:14px 16px;border-radius:999px;border:none;font-weight:700;cursor:pointer;transition:transform .05s ease;background:rgba(255,255,255,.18);color:#fff}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:#ef476f}
+.btn.yes{background:#06d6a0}
+.btn.no{background:#118ab2}
+.btn.idk{background:#8d99ae}
+.btn.prob,.btn.pnot{background:#ffd166;color:#3a0ca3}
+.top5{margin-top:14px;opacity:.9}
