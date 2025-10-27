@@ -1,0 +1,7 @@
+/target/
+.server_files/
+server_files/
+*.log
+*.class
+*.jar
+.DS_Store
