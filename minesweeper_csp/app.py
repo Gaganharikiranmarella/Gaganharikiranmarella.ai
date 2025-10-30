@@ -10,105 +10,129 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
 
-    # Session-like state
-    if not hasattr(page, "game"):
-        page.game = None
-        page.params = (9, 9, 10, True)
+    # Persistent state containers on first run
+    if not hasattr(page, "params"):
+        page.params = (9, 9, 10, True)  # rows, cols, mines, first_click_safe [web:242]
+    if not hasattr(page, "game") or page.game is None:
+        r0, c0, m0, fc0 = page.params
+        page.game = Minesweeper(r0, c0, m0, first_click_safe=fc0)  # ensure game exists before UI uses it [web:242]
 
-    # Sidebar-like controls
+    # Hosts
+    header = ft.Text("Minesweeper + CSP", size=26, weight=ft.FontWeight.W_800)
+    board_host = ft.Container(expand=True)
+    status = ft.Text("", size=14)
+
+    # Handlers that board controls will capture
+    def on_reveal(r, c):
+        g = page.game
+        if g and not g.game_over:
+            g.reveal(r, c)
+            refresh()  # rebuild board after state change [web:185]
+
+    def on_flag(r, c):
+        g = page.game
+        if g and not g.game_over:
+            g.toggle_flag(r, c)
+            refresh()  # rebuild board after state change [web:185]
+
+    # Refresh UI tree from current game
+    def refresh():
+        board_host.content = board_grid(page.game, on_reveal, on_flag)  # new GridView from game state [web:262]
+        g = page.game
+        if g.won:
+            status.value = "✅ You won! Board complete."
+        elif g.game_over:
+            status.value = "💥 Game over — a mine was revealed."
+        else:
+            status.value = f"ℹ️ Grid: {g.rows}×{g.cols} | Mines: {g.mines_count} | Flags: {len(g.flagged_cells())}"
+        page.update()  # commit UI changes [web:242]
+
+    # Create/replace the game instance and rebuild
     def reset_game(rows, cols, mines, fc):
-        page.game = Minesweeper(rows, cols, mines, first_click_safe=fc)
-        page.update()
+        page.game = Minesweeper(rows, cols, mines, first_click_safe=fc)  # new state [web:242]
+        refresh()
 
+    # Settings card with robust Reset
     r0, c0, m0, fc0 = page.params
-    rows = ft.TextField(label="Rows", value=str(r0), width=150)
-    cols = ft.TextField(label="Cols", value=str(c0), width=150)
-    mines = ft.TextField(label="Mines", value=str(m0), width=150)
-    fc_safe = ft.Switch(label="First click safe", value=fc0)
+    rows_tf = ft.TextField(label="Rows", value=str(r0), width=120, keyboard_type=ft.KeyboardType.NUMBER)  # numeric input hint [web:239]
+    cols_tf = ft.TextField(label="Cols", value=str(c0), width=120, keyboard_type=ft.KeyboardType.NUMBER)  # numeric input hint [web:239]
+    mines_tf = ft.TextField(label="Mines", value=str(m0), width=120, keyboard_type=ft.KeyboardType.NUMBER)  # numeric input hint [web:239]
+    fc_safe_sw = ft.Switch(label="First click safe", value=fc0)
 
     def on_reset(e):
+        # Parse and clamp values to safe ranges
         try:
-            rr = max(5, min(30, int(rows.value)))
-            cc = max(5, min(30, int(cols.value)))
-            mm = max(1, min(rr*cc-1, int(mines.value)))
-            ff = bool(fc_safe.value)
-            page.params = (rr, cc, mm, ff)
-            reset_game(rr, cc, mm, ff)
+            rr = int(rows_tf.value)
+            cc = int(cols_tf.value)
         except Exception:
-            pass
+            rr, cc = r0, c0
+        rr = max(5, min(30, rr))
+        cc = max(5, min(30, cc))
+        try:
+            mm = int(mines_tf.value)
+        except Exception:
+            mm = m0
+        mm = max(1, min(rr * cc - 1, mm))
+        ff = bool(fc_safe_sw.value)
+        # Persist, normalize inputs, rebuild game and board
+        page.params = (rr, cc, mm, ff)  # save params [web:242]
+        rows_tf.value, cols_tf.value, mines_tf.value = str(rr), str(cc), str(mm)  # reflect clamped values [web:239]
+        reset_game(rr, cc, mm, ff)  # recompose UI [web:185]
+
+    # Enter-to-apply for quick changes
+    rows_tf.on_submit = on_reset  # apply on Enter [web:239]
+    cols_tf.on_submit = on_reset  # apply on Enter [web:239]
+    mines_tf.on_submit = on_reset  # apply on Enter [web:239]
 
     settings_card = ft.Card(
         content=ft.Container(
-            content=ft.Column(spacing=8, controls=[
-                ft.Text("New Game", weight=ft.FontWeight.BOLD, size=16),
-                ft.Row(spacing=8, controls=[rows, cols, mines]),
-                fc_safe,
-                ft.ElevatedButton("🔁 Reset", on_click=on_reset),
-            ]),
-            padding=12
+            content=ft.Column(
+                spacing=8,
+                controls=[
+                    ft.Text("New Game", weight=ft.FontWeight.BOLD, size=16),
+                    ft.Row(spacing=8, controls=[rows_tf, cols_tf, mines_tf]),
+                    fc_safe_sw,
+                    ft.ElevatedButton("🔁 Reset", on_click=on_reset),
+                ],
+            ),
+            padding=12,
         )
     )
 
-    if page.game is None:
-        reset_game(*page.params)
-
-    # Handlers
-    def on_reveal(r, c):
-        if not page.game.game_over:
-            page.game.reveal(r, c)
-            refresh()
-
-    def on_flag(r, c):
-        if not page.game.game_over:
-            page.game.toggle_flag(r, c)
-            refresh()
-
+    # Solver actions
     def do_step():
-        if page.game.game_over:
-            return
-        safe, mines_to_flag, guess = next_actions(page.game)
-        apply_actions(page.game, safe, mines_to_flag, guess)
-        refresh()
+        g = page.game
+        if g and not g.game_over:
+            safe, mines_to_flag, guess = next_actions(g)
+            apply_actions(g, safe, mines_to_flag, guess)
+            refresh()
 
     def do_auto():
-        if page.game.game_over:
-            return
-        steps = 0
-        while not page.game.game_over and steps < 500:
-            safe, mines_to_flag, guess = next_actions(page.game)
-            changed = apply_actions(page.game, safe, mines_to_flag, guess)
-            steps += 1
-            if not changed:
-                break
-        refresh()
+        g = page.game
+        if g and not g.game_over:
+            steps = 0
+            while not g.game_over and steps < 500:
+                safe, mines_to_flag, guess = next_actions(g)
+                changed = apply_actions(g, safe, mines_to_flag, guess)
+                steps += 1
+                if not changed:
+                    break
+            refresh()
 
     def do_reveal_all():
-        for r in range(page.game.rows):
-            for c in range(page.game.cols):
-                if not page.game.grid[r][c].revealed and not page.game.grid[r][c].flagged:
-                    page.game.grid[r][c].revealed = True
+        g = page.game
+        for r in range(g.rows):
+            for c in range(g.cols):
+                if not g.grid[r][c].revealed and not g.grid[r][c].flagged:
+                    g.grid[r][c].revealed = True
         refresh()
 
-    # Layout containers
-    header = ft.Text("Minesweeper + CSP", size=26, weight=ft.FontWeight.W_800)
-    actions = toolbar(page.game, do_step, do_auto, do_reveal_all)
-    status = ft.Text("", size=14)
+    actions = toolbar(page.game, do_step, do_auto, do_reveal_all)  # simple toolbar row [web:178]
 
-    board_host = ft.Container(expand=True)
+    # Initial composition
+    refresh()  # build board and status now that handlers/state are ready [web:185]
 
-    def refresh():
-        board_host.content = board_grid(page.game, on_reveal, on_flag)
-        if page.game.won:
-            status.value = "✅ You won! Board complete."
-        elif page.game.game_over:
-            status.value = "💥 Game over — a mine was revealed."
-        else:
-            status.value = f"ℹ️ Grid: {page.game.rows}×{page.game.cols} | Mines: {page.game.mines_count} | Flags: {len(page.game.flagged_cells())}"
-        page.update()
-
-    # First render
-    refresh()
-
+    # Mount page
     page.add(
         header,
         settings_card,
