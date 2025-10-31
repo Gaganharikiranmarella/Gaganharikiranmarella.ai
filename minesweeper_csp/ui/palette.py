@@ -1,13 +1,13 @@
 import flet as ft
 
-# Use ft.Colors or hex strings to avoid attribute errors across versions
-BG = ft.Colors.WHITE
-TEXT = ft.Colors.BLACK
-MUTED = ft.Colors.BLUE_GREY_600
-BORDER = ft.Colors.BLUE_GREY_200
-TILE = ft.Colors.BLUE_GREY_50
-BOMB_BG = ft.Colors.RED_50
-BOMB_FG = ft.Colors.RED_900
+# Hex strings are stable across Flet versions
+BG = "#FFFFFF"
+TEXT = "#000000"
+MUTED = "#546E7A"     # blue_grey_600
+BORDER = "#B0BEC5"    # blue_grey_200
+TILE = "#ECEFF1"      # blue_grey_50
+BOMB_BG = "#FFEBEE"   # red_50
+BOMB_FG = "#B71C1C"   # red_900
 
 def tile_container(content: ft.Control, bg: str, fg: str) -> ft.Container:
     return ft.Container(
