@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+websockets
+python-dotenv
+aiosqlite
+opencv-python
+numpy
