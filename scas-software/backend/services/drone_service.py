@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 
 from database.models import DroneTelemetry
+from database.models import Alert
 
 from threat_engine.threat_assessor import ThreatAssessor
+from swarm.clustering import SwarmDetector
 
 
 class DroneService:
@@ -29,9 +31,28 @@ class DroneService:
             drone
         )
 
+        all_drones = db.query(
+            DroneTelemetry
+        ).all()
+
+        swarm_detected = SwarmDetector.detect(
+            all_drones
+        )
+
+        if swarm_detected:
+
+            alert = Alert(
+                severity="HIGH",
+                message="Potential drone swarm detected"
+            )
+
+            db.add(alert)
+            db.commit()
+
         return {
             "drone": drone,
-            "threat_level": threat_level
+            "threat_level": threat_level,
+            "swarm_detected": swarm_detected
         }
 
     @staticmethod
