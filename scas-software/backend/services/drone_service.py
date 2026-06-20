@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 
 from database.models import DroneTelemetry
 
+from threat_engine.threat_assessor import ThreatAssessor
+
 
 class DroneService:
 
@@ -23,7 +25,14 @@ class DroneService:
         db.commit()
         db.refresh(drone)
 
-        return drone
+        threat_level = ThreatAssessor.assess(
+            drone
+        )
+
+        return {
+            "drone": drone,
+            "threat_level": threat_level
+        }
 
     @staticmethod
     def get_all(
