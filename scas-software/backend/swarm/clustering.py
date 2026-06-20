@@ -5,9 +5,29 @@ class SwarmDetector:
         drones
     ):
 
-        count = len(drones)
+        if len(drones) < 3:
+            return False
 
-        if count >= 3:
-            return True
+        first = drones[0]
 
-        return False
+        nearby_count = 0
+
+        for drone in drones:
+
+            lat_diff = abs(
+                drone.latitude -
+                first.latitude
+            )
+
+            lon_diff = abs(
+                drone.longitude -
+                first.longitude
+            )
+
+            if (
+                lat_diff < 0.01 and
+                lon_diff < 0.01
+            ):
+                nearby_count += 1
+
+        return nearby_count >= 3
