@@ -31,3 +31,22 @@ class DroneTelemetry(Base):
         DateTime,
         default=datetime.utcnow
     )
+
+
+class Alert(Base):
+
+    __tablename__ = "alerts"
+
+    id = Column(
+        Integer,
+        primary_key=True
+    )
+
+    severity = Column(String)
+
+    message = Column(String)
+
+    timestamp = Column(
+        DateTime,
+        default=datetime.utcnow
+    )

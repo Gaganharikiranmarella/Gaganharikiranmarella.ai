@@ -4,6 +4,7 @@ from database.models import Base
 from database.session import engine
 
 from api.drones import router as drone_router
+from api.alerts import router as alert_router
 
 
 Base.metadata.create_all(
@@ -14,9 +15,12 @@ app = FastAPI(
     title="SCAS Backend"
 )
 
-
 app.include_router(
     drone_router
+)
+
+app.include_router(
+    alert_router
 )
 
 
