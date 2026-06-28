@@ -30,11 +30,7 @@ export default function VideoStream() {
     >
 
       <img
-
-        src="
-http://192.168.1.10:8080/video
-"
-
+        src="http://192.168.29.110:8080/video"
         className="
         w-full
         h-full
