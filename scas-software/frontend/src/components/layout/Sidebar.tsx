@@ -6,7 +6,8 @@ import {
   ShieldAlert, 
   BarChart2, 
   Settings,
-  BookOpen
+  BookOpen,
+  Scan
 } from "lucide-react";
 
 const items = [
@@ -34,6 +35,11 @@ const items = [
     label: "Threat Intel",
     route: "/threat-intel",
     icon: ShieldAlert
+  },
+  {
+    label: "Model Testing",
+    route: "/test",
+    icon: Scan
   },
   {
     label: "Analytics",
